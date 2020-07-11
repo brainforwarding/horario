@@ -1,6 +1,6 @@
 # cursillos
-* teachertt.mod: contiene el código del programa en ampl
-* teacher_scheduling.py contiene la última versión del programa en python
+* SchedulingModelAMPL/teachertt.mod: contiene el código del programa en ampl
+* SchedulingModelPY/teacher_scheduling.py contiene la última versión del programa en python
 
 ## instrucciones para AMPL
 * ir a [NEOS Server Gurobi](https://neos-server.org/neos/solvers/lp:Gurobi/AMPL.html)
