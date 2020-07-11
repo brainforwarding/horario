@@ -6,6 +6,7 @@
 * SchedulingModelPY/teacher_scheduling.py la última versión del programa en Python
 
 * timetableViewAMPL programa en py para llevar el output de ampl a un horario gráfico
+* Check out run_auto_height.py 
 
 * formatInputData programa para transformar input del colegio de una planilla de cálculo al formato que requiere el modelo en Python
 

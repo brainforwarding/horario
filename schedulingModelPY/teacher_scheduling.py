@@ -283,7 +283,7 @@ for c in C:
 # Locked sessions that can not be changed. 
 # solver.Add(x[1,1,'PHY2','KM'] + x[1,2,'PHY2','KM'] == 2) # Sí funciona pero está comentado
 
-#TODO Following three constraints generate a syntax error
+#Following three constraints generate a syntax error
 # Make sure that given courses have 2 or 0 periods each day
 #Two_Lectures_per_day{d in D, c in C_double}:
 #sum{p in P, k in K} x[d,p,c,k] = 2 or 0; #i hoped this would allow some days to have 2 and other 0
@@ -301,11 +301,20 @@ for c in C:
 #             if(p != 8):    
 #                 solver.Add(solver.Sum([x[d,p,c,k] + x[d,p+1,c,k] for d in D for k in K]) == 2)
 
-
 #TODO create different types of classes? Some taught by teachers and others by aids
 #TODO make sure that classes with more than one period per day are given at consecutive times
-#TODO caso de clases de gimnasia para dos niveles en el mismo horario con el mismo profe
-#TODO caso de dos o más asignaturas que se pueden dar juntas en el mismo horario
+#TODO resolve how to enter classes that are given to more than one student group / course by the same teacher (eg. gym class for 1st and 2nd grade could be shared)
+#TODO resolve how to allow for two or more subjects so that they can be given together, at the same time (eg. science 1A and music 1A, for project based learning).
+#TODO clase que se enseña por más de un docente :O
+#TODO resolve how two force two or more subjects to always be taught at the same time (basic and advanced math for the same student group)
+#TODO Definir horas libres por asignatura, de lunes a domingo, o para que los niños chicos nunca tengan clase a primera hora
+#TODO consider classrooms
+#TODO revisar si los colegios quieren la funcionalidad de ver el docente óptimo por asignatura
+#TODO class divisions (eg boys and girls to later join boys of different classes for gym)
+#TODO limit number of days a teacher can teach (external teacher works only two days a week. computer chooses which two days)
+#TODO limit number of windows per teacher 
+#TODO limit set min/max number of lessons per day for each teacher
+#TODO limit number of consecutive lessons
 
 # Make sure that there is some day between lectures when possible (excludes classes with 4 or more hours per week)
 for d in D:
