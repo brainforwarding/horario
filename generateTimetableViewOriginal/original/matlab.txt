@@ -1,0 +1,297 @@
+% Getting AMPL data, that is lectures (x), exercises (y) and computer labs (z).
+Xtmp=fileread('x.txt');
+Ytmp=fileread('y.txt');
+Ztmp=fileread('z.txt');
+% Number of courses and number of rooms
+numOfCourses = 15;
+numOfRooms = 11;
+% Signs and words that must be deleted from the read files so that they can
+% be converted into numbers
+bad={'L9MA10'; 'LGMA10'; 'MMA421'; 'MMA511'; 'MMG300'; 'MMG500'; 'MMG720';
+'MMG800'; 'MMGF20'; 'MMGK11'; 'MMGL31'; 'MSA200'; 'MSG200'; 'MSG830';
+'MVG300';'Euler'; 'MVF21'; 'MVF22'; 'MVF23'; 'MVF26'; 'MVF31'; 'MVF32';
+'MVF33'; 'MVH11'; 'MVH12'; 'MMGF30';'Pascal';',';'=';':';';';'[51**]';
+'[41**]';'[31**]';'[21**]'; '[14**]';'[13**]';'[12**]';'x [11**]';
+'y [11**]';'z [11**]';'2';'3';'4';'5';'[';']';'*';'_ex';'_com'};
+
+% Replace every element from 'bad' with an empty slot for x, y and z
+for i=1:length(bad);
+Xtmp = strrep(Xtmp,bad{i,1},'');
+Ytmp = strrep(Ytmp,bad{i,1},'');
+Ztmp = strrep(Ztmp,bad{i,1},'');
+end
+
+% Convert characters to numbers
+Xtmp=str2num(Xtmp);
+Ytmp=str2num(Ytmp);
+Ztmp=str2num(Ztmp);
+
+% Strings with zeroes. The length 20 since we got 5 days with 4 time
+% periods each
+X=zeros(numOfCourses,numOfRooms,20);
+Y=zeros(numOfCourses,numOfRooms,20);
+Z=zeros(numOfCourses,numOfRooms,20);
+
+% The output from AMPL is in the form of a large matrix. This matrix is
+% here rewritten to a three-dimensional tensor. This is done for X, Y and Z.
+% will then contain submatrices representing all the timeperiods.
+for i=0:19
+X(:,:,i+1)=Xtmp(1+numOfCourses*i:numOfCourses*(i+1),:);
+Y(:,:,i+1)=Ytmp(1+numOfCourses*i:numOfCourses*(i+1),:);
+Z(:,:,i+1)=Ztmp(1+numOfCourses*i:numOfCourses*(i+1),:);
+end
+
+% Vectors with course codes for lectures, exercises and computer labs.
+lectures={'\fontname{times}LGMA10 lec'; '\fontname{times}MMA421 lec';
+'\fontname{times}MMA511 lec'; '\fontname{times}MMG300 lec';
+'\fontname{times}MMG500 lec'; '\fontname{times}MMG720 lec';
+'\fontname{times}MMG800 lec'; '\fontname{times}MMGF20 lec';
+'\fontname{times}MMGF30 lec'; '\fontname{times}MMGK11 lec';
+'\fontname{times}MMGL31 lec'; '\fontname{times}MSA200 lec';
+'\fontname{times}MSG200 lec'; '\fontname{times}MSG830 lec';
+'\fontname{times}MVG300 lec'};
+
+excercises={'\fontname{times}LGMA10 ex'; '\fontname{times}MMA421 ex';
+'\fontname{times}MMA511 ex'; '\fontname{times}MMG300 ex';
+'\fontname{times}MMG500 ex'; '\fontname{times}MMG720 ex';
+'\fontname{times}MMG800 ex'; '\fontname{times}MMGF20 ex';
+'\fontname{times}MMGF30 ex'; '\fontname{times}MMGK11 ex';
+'\fontname{times}MMGL31 ex'; '\fontname{times}MSA200 ex';
+'\fontname{times}MSG200 ex'; '\fontname{times}MSG830 ex';
+'\fontname{times}MVG300 ex'};
+
+comlabs={'\fontname{times}LGMA10 com'; '\fontname{times}MMA421 com';
+'\fontname{times}MMA511 com'; '\fontname{times}MMG300 com';
+'\fontname{times}MMG500 com'; '\fontname{times}MMG720 com';
+'\fontname{times}MMG800 com'; '\fontname{times}MMGF20 com';
+'\fontname{times}MMGF30 com'; '\fontname{times}MMGK11 com';
+'\fontname{times}MMGL31 com'; '\fontname{times}MSA200 com';
+'\fontname{times}MSG200 com'; '\fontname{times}MSG830 com';
+'\fontname{times}MVG300 com'};
+
+% Vector with rooms
+rooms={'\fontname{times}Euler'; '\fontname{times}MVF21';
+'\fontname{times}MVF22'; '\fontname{times}MVF23'; '\fontname{times}MVF26';
+'\fontname{times}MVF31'; '\fontname{times}MVF32'; '\fontname{times}MVF33';
+'\fontname{times}MVH11'; '\fontname{times}MVH12'; '\fontname{times}Pascal'};
+
+% Definied colors
+color1 = [0,1,0];
+color2 = [0.7,1,1];
+color3 = [1,0.5,0.5];
+color4 = [1,1,0];
+%% All courses in one timetable
+
+% Set color
+coursecol=['y';'y';'y';'y';'y';'y';'y';'y';'y';'y';'y';'y';'y';'y';'y'];
+
+figure(1)
+clf
+% Remove axes info
+set(axes(),'XTick',[],'YTIck',[])
+hold on
+
+% Loop through all time periods
+for k = 1:20
+
+% Choose one time period at each iteration and
+% find the non-zero indexes from this matrix
+A=sparse(X(:,:,k));
+
+% i and j are vectors with the indexes
+[i,j]=find(A);
+
+% Find which day we are at
+day = 0.7*(ceil(k/4)-1);
+% Find which period we are at
+if (mod(k-1,4)+1) == 4
+period = 1.14*(mod(k-1,4)+1);
+else
+period = 1.1*(mod(k-1,4)+1);
+end
+% Set Y displacement to zero
+% It will be increased every time a session is plotted
+ydisp=0;
+
+% If we have non zero entries
+if ~isempty(i)
+% A long as we have it
+for l=1:length(i)
+% Write the lecture and the room, then increase ydisp
+text(day,2*(5-period-ydisp),lectures(i(l)),'BackgroundColor',...
+coursecol(i(l)),'FontWeight','bold','FontSize',5);
+text(day+0.32,2*(5-period-ydisp),rooms(j(l)),'BackgroundColor',...
+coursecol(i(l)),'FontWeight','bold','FontSize',5);
+ydisp=ydisp+0.13;
+end
+end
+
+% Does exactly the same for exercises
+A=sparse(Y(:,:,k));
+[i,j]=find(A);
+day = 0.7*(ceil(k/4)-1);
+if (mod(k-1,4)+1) == 4
+period = 1.14*(mod(k-1,4)+1);
+else
+period = 1.1*(mod(k-1,4)+1);
+end
+
+if ~isempty(i)
+for l=1:length(i)
+text(day,2*(5-period-ydisp),excercises(i(l)),'BackgroundColor',...
+coursecol(i(l)),'FontWeight','bold','FontSize',5);
+text(day+0.32,2*(5-period-ydisp),rooms(j(l)),'BackgroundColor',...
+coursecol(i(l)),'FontWeight','bold','FontSize',5);
+ydisp=ydisp+0.13;
+end
+end
+
+% Does exactly the same for computer labs
+A=sparse(Z(:,:,k));
+[i,j]=find(A);
+day = 0.7*(ceil(k/4)-1);
+
+if (mod(k-1,4)+1) == 4
+period = 1.14*(mod(k-1,4)+1);
+else
+period = 1.1*(mod(k-1,4)+1);
+end
+
+if ~isempty(i)
+for l=1:length(i)
+text(day,2*(5-period-ydisp),comlabs(i(l)),'BackgroundColor',...
+coursecol(i(l)),'FontWeight','bold','FontSize',5);
+text(day+0.32,2*(5-period-ydisp),rooms(j(l)),'BackgroundColor',...
+coursecol(i(l)),'FontWeight','bold','FontSize',5);
+ydisp=ydisp+0.13;
+end
+end
+end
+
+% Separates the time periods with lines
+plot([-0.2,3.3],[8,8],'k','LineWidth',3);
+plot([-0.2,3.3],[5.8,5.8],'k','LineWidth',3);
+plot([-0.2,3.3],[3.6,3.6],'k','LineWidth',3);
+plot([-0.2,3.3],[1.07,1.07],'k','LineWidth',3);
+
+plot([-0.01,-0.01],[0,8.5],'k','LineWidth',3);
+plot([0.575,0.575],[0,8.5],'k','LineWidth',3);
+plot([1.29,1.29],[0,8.5],'k','LineWidth',3);
+plot([1.99,1.99],[0,8.5],'k','LineWidth',3);
+plot([2.675,2.675],[0,8.5],'k','LineWidth',3);
+
+plot([3.29999,3.29999],[0,8.5],'k');
+plot([-0.2,3.3],[8.49999,8.49999],'k');
+
+% Draw all the days and times
+text(0.16,8.2,'\fontname{times}Monday','FontSize',5,'FontWeight','bold');
+text(0.8,8.2,'\fontname{times}Tuesday','FontSize',5,'FontWeight','bold');
+text(1.5,8.2,'\fontname{times}Wednesday','FontSize',5,'FontWeight','bold');
+text(2.2,8.2,'\fontname{times}Thursday','FontSize',5,'FontWeight','bold');
+text(2.9,8.2,'\fontname{times}Friday','FontSize',5,'FontWeight','bold');
+
+text(-0.15,7.8,'\fontname{times}8:00','FontSize',5,'FontWeight','bold');
+text(-0.18,5.6,'\fontname{times}10:00','FontSize',5,'FontWeight','bold');
+text(-0.18,3.4,'\fontname{times}13:15','FontSize',5,'FontWeight','bold');
+text(-0.18,0.9,'\fontname{times}15:15','FontSize',5,'FontWeight','bold');
+
+axis([-0.2 3.3 0 8.5])
+
+%% GU1+2
+% Creates a plot for only GU1 and GU2
+% Most works as in the previous case
+coursecol=[color2;color2;color2;color1;color2;color2;color2;color2;color2
+color2;color2;color2;color2;color2;color1];
+figure(2)
+clf
+set(axes(),'XTick',[],'YTIck',[])
+hold on
+
+for k = 1:20
+
+ydisp=0;
+
+A=sparse(X(:,:,k));
+[i,j]=find(A);
+day = 0.7*(ceil(k/4)-1);
+period = 1.12*(mod(k-1,4)+1);
+
+if ~isempty(i)
+for l=1:length(i)
+% Choose only the courses we want
+if i(l)==4 || i(l)==15 || i(l)==5 || i(l)==13
+text(day,2*(5-period-ydisp),lectures(i(l)),'BackgroundColor',...
+coursecol(i(l),:),'FontWeight','bold','FontSize',5);
+text(day+0.38,2*(5-period-ydisp),rooms(j(l)),'BackgroundColor',...
+coursecol(i(l),:),'FontWeight','bold','FontSize',5);
+ydisp=ydisp+0.23;
+end
+end
+end
+
+A=sparse(Y(:,:,k));
+[i,j]=find(A);
+day = 0.7*(ceil(k/4)-1);
+period = 1.12*(mod(k-1,4)+1);
+
+if ~isempty(i)
+for l=1:length(i)
+if i(l)==4 || i(l)==15 || i(l)==5 || i(l)==13
+text(day,2*(5-period-ydisp),excercises(i(l)),'BackgroundColor',...
+coursecol(i(l),:),'FontWeight','bold','FontSize',5);
+text(day+0.38,2*(5-period-ydisp),rooms(j(l)),'BackgroundColor',...
+coursecol(i(l),:),'FontWeight','bold','FontSize',5);
+ydisp=ydisp+0.23;
+end
+end
+end
+
+A=sparse(Z(:,:,k));
+[i,j]=find(A);
+day = 0.7*(ceil(k/4)-1);
+period = 1.12*(mod(k-1,4)+1);
+
+if ~isempty(i)
+for l=1:length(i)
+if i(l)==4 || i(l)==15 || i(l)==5 || i(l)==13
+text(day,2*(5-period-ydisp),comlabs(i(l)),'BackgroundColor',...
+coursecol(i(l),:),'FontWeight','bold','FontSize',5);
+text(day+0.38,2*(5-period-ydisp),rooms(j(l)),'BackgroundColor',...
+coursecol(i(l),:),'FontWeight','bold','FontSize',5);
+ydisp=ydisp+0.23;
+end
+end
+end
+end
+
+plot([-0.22,3.4],[8,8],'k','LineWidth',3);
+plot([-0.22,3.4],[5.85,5.85],'k','LineWidth',3);
+plot([-0.22,3.4],[3.62,3.62],'k','LineWidth',3);
+plot([-0.22,3.4],[1.37,1.37],'k','LineWidth',3);
+
+plot([-0.01,-0.01],[0,8.5],'k','LineWidth',3);
+plot([0.635,0.635],[0,8.5],'k','LineWidth',3);
+plot([1.35,1.35],[0,8.5],'k','LineWidth',3);
+plot([2.03,2.03],[0,8.5],'k','LineWidth',3);
+plot([2.75,2.75],[0,8.5],'k','LineWidth',3);
+
+plot([3.39999,3.39999],[0,8.5],'k');
+plot([-0.22,3.4],[8.49999,8.49999],'k');
+
+text(0.16,8.2,'\fontname{times}Monday','FontWeight','bold','FontSize',5);
+text(0.82,8.2,'\fontname{times}Tuesday','FontWeight','bold','FontSize',5);
+text(1.47,8.2,'\fontname{times}Wednesday','FontWeight','bold','FontSize',5);
+text(2.2,8.2,'\fontname{times}Thursday','FontWeight','bold','FontSize',5);
+text(2.94,8.2,'\fontname{times}Friday','FontWeight','bold','FontSize',5);
+
+text(-0.18,7.7,'\fontname{times}8:00','FontWeight','bold','FontSize',5);
+text(-0.22,5.55,'\fontname{times}10:00','FontWeight','bold','FontSize',5);
+text(-0.22,3.35,'\fontname{times}13:15','FontWeight','bold','FontSize',5);
+text(-0.22,1.05,'\fontname{times}15:15','FontWeight','bold','FontSize',5);
+
+% Color sample
+text(0.1,7.5,'\fontname{times}Color 1:','FontWeight','bold','FontSize',5);
+text(0.35,7.5,' ','BackgroundColor',color1);
+text(0.1,7,'\fontname{times}Color 2:','FontWeight','bold','FontSize',5);
+text(0.35,7,' ','BackgroundColor',color2);
+axis([-0.22 3.4 0 8.5])
