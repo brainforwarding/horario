@@ -282,48 +282,6 @@ for c in C:
     for k in K:
         solver.Add(solver.Sum([x[d,p,c,k] for d in D for p in P]) == w1[c,k]*hours[c])
 
-# Locked sessions that can not be changed. 
-# solver.Add(x[1,1,'PHY2','KM'] + x[1,2,'PHY2','KM'] == 2) # Sí funciona pero está comentado
-
-# # Make sure that given courses do not have more than 1 lecture each day
-# for d in D:
-#     for c in C:
-#         solver.Add(solver.Sum([x[d,p,c,k] for p in P for k in K]) <= 1)
-
-# # Make sure that classes are taught in 2 hour segments when possible (excludes classes even number of hours)
-# for k in K:
-#     for p in P:
-#         for c in {'MAT1','MAT2','MAT3','MAT4','MAT5','MAT6','LAN1','LAN2','LAN3','LAN4','LAN5','LAN6'}:
-#             if(p != 8):    
-#                 solver.Add(solver.Sum([x[d,p,c,k] + x[d,p+1,c,k] for d in D for k in K]) == 2)
-
-#TODOs para más adelante:
-# Create different types of classes? Some taught by teachers and others by aids
-# Class divisions (eg boys and girls to later join boys of different classes for gym)
-# Classrooms 1.1 Incorporate classrooms into the model (the physical space where a class should be given).
-# Classrooms 1.2. There should be a default classroom for each group, but exceptions should be allowed. Another way is to specify the classroom for each subject 
-# Classrooms 1.3 Classrooms should not collide
-# Classrooms 1.4 when a particular classroom is assigned, all classes should be forced to be on the same classroom.
-# limit number of days a teacher can teach (for example, an external teacher works only two days a week. Computer chooses which two days)
-# set min/max number of lessons per day that each teacher can teach. This should be easy
-# write constaint to limit the number of consecutive lessons a teacher can teach 
-# Same as 4 below. Resolve how two split force two or more subjects to always be taught at the same time (basic and advanced math for the same student group)
-# Aplica? Propose solution to allow for two or more subjects to share one or more periods (eg. science 1A and music 1A could share a 1 period a week. That period counts  for project based learning). Lo que se requiere es que el profe de ciencias esté libre en uno de los horarios de música y vice versa. O bien que estén enseñando a cursos compatibles, que se puedan unir, a la misma hora.
-# NOTE: for solving 2 below I have considered restrictions of type [p] + [p+1] = 2; Also, ceate a group of classes that should be given in two-hour segments and assign them available consecutive times    
-
-#FINAL TODO LIST
-# 1.1 Different weekdays could have a variable number of periods p (e.g. Wednesdays or Saturdays could have only 4 periods, while other days could have 8)
-# 1.2 System should allow to specify exceptions to 1.1 for a given course (i.e. C_G1). In other words, available days and periods should be allowed to be variable for different courses (young students of C_G1 could have a Mon-Friday schedule or start classes in Period 3 every day, but older students in C_G12 might have a Mon-Saturday Schedule).
-# 1.3 System should allow to specify exceptions to 1.2 for a given subject (i.e. MAT1 within C_G1). In other words, MAT1 might not be allowed to meet on Mondays or any day right after lunch).
-# NOTE: for 1.1, 1.2 and 1.3 I suggest considering defining the available times at the subject level. Unless specified, the course level is applied. If course level is not specified, the global school schedule applies. In other words, global school schedule is default value for courses and courses is the default value for subjects.
-# 2.1 Make sure that when subjects end up with more than one class period per day, those periods are consecutive
-# 2.2 Make sure consecutive class periods are not separated by a break (See figure 1 for new format of how data will be collected. Instead of 8 periods per day there could be 11 considering the 3 breaks in between. Classes should be scheduled only in class periods, not breaks)
-# 3. Propose solution to consider subjects that are given to two or more student groups (e.g. MATX class for C_G1, C_G2 and C_G3 could be shared; that is, given by the same teacher at the same time for the three groups). 
-# 4. Propose solution to allow for more than one teacher in a given subject (e.g. MAT2 taught by both K2 and K3)
-# 5. Transform "discomfort" into a binary variable, with times at which a teacher can teach and other times at which he/she cannot teach
-# 6. Propose solution to limit the number of "free window periods" for teachers. This could be the same restriction for every teacher or a different one for each one, as you consider easiest/best (a "free window period" is a period in which a teacher is not teaching a class. The idea here is that a teacher should not be asked to attend school for teaching only the first and last period in a day. As such, the number of consecutive window periods in the same day could be set as max 4, for example)
-#. NOTE: If necessary, dummy data should be used to show the functioning of each item above
-
 # Make sure that there is some day between lectures when possible (excludes classes with 4 or more hours per week)
 for d in D:
     if (d != 5):
