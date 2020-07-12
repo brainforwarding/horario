@@ -289,6 +289,9 @@ for d in D:
             if(c not in {'MAT1','MAT2','MAT3','MAT4','MAT5','MAT6','LAN1','LAN2','LAN3','LAN4','LAN5','LAN6','PHY1','PHY2','PHY3','PHY4','PHY5','PHY6','CIE5','CIE6','HIS5','HIS6'}):
                 solver.Add(solver.Sum([x[d,p,c,k] + x[d+1,p,c,k] for p in P for k in K]) <= 1)
 
+print("Número de variables =", solver.NumVariables())
+print("Número de restricciones =", solver.NumConstraints())
+
 # Objective
 objective_terms = []
 for d in D:
@@ -314,3 +317,9 @@ if status == pywraplp.Solver.OPTIMAL or status == pywraplp.Solver.FEASIBLE:
                         print(d, p, c, k, x[d,p,c,k].solution_value())
 else:
     print("Problem Infeasible")
+
+#Información adicional
+print('\nInformacion adicional:')
+print('Problema resuelto en %f milisegundos' % solver.wall_time())
+print('Problema resuelto en %d iteraciones' % solver.iterations())
+print('Problema resuelto en %d nodos de branch-and-bound' % solver.nodes())
